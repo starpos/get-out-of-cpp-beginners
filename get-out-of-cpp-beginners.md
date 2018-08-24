@@ -34,7 +34,7 @@ C++ は歴史が長いからなのか、とにかく仕様が複雑で大量に�
 <a name="struct-and-class"></a>
 ## C++ クラスと C 構造体の違い
 
-C++ クラスは C 構造体の概念を内包しています。[POD](https://en.cppreference.com/w/cpp/named_req/PODType) (Plain Old Data) class は C 構造体として C 関数に渡せる、`memcpy` でコピーできるなどの特徴を持ちます。C++11 では、POD の定義が [standard-layout](https://en.cppreference.com/w/cpp/named_req/StandardLayoutType) class と [trivial](https://en.cppreference.com/w/cpp/named_req/TrivialType) class というふたつの概念で表現されるようになり、C++20 では POD よりも後者の概念が主体的に扱われるようになります。Standard-layout class は C 構造体として C 関数に渡せることを、trivial class は `memcpy` でコピーできることを念頭に定義がされています。C 言語で使っていた `struct` の機能以上のものを使っておらず、メンバ変数もそうであるクラスは、間違いなく standard-layout かつ trivial なので安心してください。逆にいえば、C 構造体として C 関数に渡してはいけなかったり、`memcpy` してはいけないクラスが存在するということです。そのようなクラスのインスタンスオブジェクトは、コンパイラが特殊なデータを付加するなどしていますので、注意しましょう。
+C++ クラスは C 構造体の概念を内包しています。[POD](https://en.cppreference.com/w/cpp/named_req/PODType) (Plain Old Data) class は C 構造体として C 関数に渡せる、`memcpy` でコピーできるなどの特徴を持ちます。C++11 では、POD の定義が [standard-layout](https://en.cppreference.com/w/cpp/named_req/StandardLayoutType) class と [trivial](https://en.cppreference.com/w/cpp/named_req/TrivialType) class というふたつの概念で表現されるようになり、C++20 では POD よりも後者の概念が主体的に扱われるようになります。Standard-layout class は C 構造体として C 関数に渡せることを、trivial class は `memcpy` でコピーできることを念頭に定義がされています。C 言語で使っていた `struct` の機能以上のものを使っておらず、メンバ変数もそうであるクラスは、間違いなく standard-layout かつ trivial なので安心してください。逆にいえば、C 構造体として C 関数に渡してはいけなかったり、`memcpy` してはいけないクラスが存在するということです。例えば、仮想関数をメンバに持つクラスは standard-layout でも trivial でもありません。仮想テーブルのような隠れたデータを持つことがあり、`memcpy` するとデータが破壊されることがあります。
 
 <a name="cstr-dstr"></a>
 ### コンストラクタとデストラクタ
@@ -145,14 +145,14 @@ struct B : A
 int main()
 {
     A* p = new B;
-    p->f1();
-    p->f2();
+    p->f1();  // B::f1 が表示される
+    p->f2();  // A::f2 が表示される
     //p->f3();
-    dynamic_cast<B*>(p)->f3();
-    ((B*)p)->f3();
+    dynamic_cast<B*>(p)->f3();  // B::f3 が表示される
+    ((B*)p)->f3();  // B::f3 が表示される
 }
 ```
-`A*` のポインタであったとしても、`f1()` は virtual メンバ関数なので、多態に相応しい挙動をし、`B::f1()` が呼ばれます。しかし、virtual ではない `f2()` は、`A*` の型だけ見てコンパイル時に呼ぶ関数を決定しますので、`A::f2()` が呼ばれます。`f3()` に至っては `A` で定義されてないのでキャストなしでは呼ぶことすらできません。それが `B` のオブジェクトであることを確信できる場合のみ `dynamic_cast` を使えますが、それはすなわち、`p` が指しているオブジェクトの型が `B` であるかどうかを判別する明示的な条件分岐を必要とするわけです。
+`A` のポインタであったとしても、`f1()` は virtual メンバ関数なので、多態に相応しい挙動をし、`B::f1()` が呼ばれます。しかし、virtual ではない `f2()` は、`A*` の型だけ見てコンパイル時に呼ぶ関数を決定しますので、`A::f2()` が呼ばれます。`f3()` に至っては `A` で定義されてないのでキャストなしでは呼ぶことすらできません。それが `B` のオブジェクトであることを確信できる場合のみ `dynamic_cast` を使えますが、それはすなわち、`p` が指しているオブジェクトの型が `B` であるかどうかを判別する明示的な条件分岐を必要とするわけです。
 
 また、継承を使うときに気をつけなければいけないこととして、一般にデストラクタの virtual 化が必要になります。以下は悪い例です:
 
@@ -209,7 +209,7 @@ public:
 <a name="new-and-delete"></a>
 ### new と delete
 
-C 言語だとヒープメモリは `malloc` 関数を使って確保し、`free` 関数を使って解放するのが一般的です。`malloc`/`free` 関数は C++ でも使えますが、それとは別に `new` 演算子と `delete` 演算子が用意されています。`new`/`delete` はヒープオブジェクトの確保と開放を行う操作で、ヒープメモリの確保解放だけではなくコンストラクタ/デストラクタ呼び出しもするという点が `malloc`/`free` とは異なります。
+C 言語だとヒープメモリは `malloc` 関数を使って確保し、`free` 関数を使って解放するのが一般的です。`malloc`/`free` 関数は C++ でも使えますが、それとは別に `new` 演算子と `delete` 演算子が用意されています。`new`/`delete` はヒープオブジェクトの確保と開放を行う操作で、ヒープメモリの確保解放だけではなくコンストラクタ/デストラクタの呼び出しもするという点が `malloc`/`free` とは異なります。
 最も大事な点は、`new` や `delete` を素で呼んではいけないことです。要するに以下のようなコードを書いてはいけません:
 
 ```c++
