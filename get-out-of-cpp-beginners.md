@@ -221,7 +221,7 @@ struct A
 {
     virtual void f1() { :: puts("A::f1"); }
     void f2() { ::puts("A::f2"); }
-    virtual ~A() noexcept {}
+    virtual ~A() {}
 };
 
 struct B : A
@@ -229,7 +229,7 @@ struct B : A
     void f1() { ::puts("B::f1"); }
     void f2() { ::puts("B::f2"); }
     void f3() { ::puts("B::f3"); }
-    ~B() noexcept {}
+    ~B() {}
 };
 
 int main()
