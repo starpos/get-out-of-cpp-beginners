@@ -1672,7 +1672,7 @@ Warning が出るということはリスクのあるコードであることを
 
 - Linux や Windows などの環境の違いによる long や unsigned long のサイズの違いには気をつけましょう。
 64bit Linux では、long は 64bit ですが、64bit Windows では 32bit です。
-64bit Windows の上で動く環境でも、64bit Cygwin では 64bit だったり、64bit MinGW では 32bit だったり、WSL ( (Windows Subsystem for Linux) ではやっぱり 64bit だったりします。
+64bit Windows の上で動く環境でも、64bit Cygwin では 64bit だったり、64bit MinGW では 32bit だったり、WSL (Windows Subsystem for Linux) ではやっぱり 64bit だったりします。
 これらの基本型のサイズのバリエーションは、LLP64、LP64、ILP64 などと呼んで区別するようです。
 Windows や MinGW は LLP64、Linux、Cygwin, WSL は LP64 です。
 
