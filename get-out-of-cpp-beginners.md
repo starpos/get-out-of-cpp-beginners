@@ -1104,6 +1104,13 @@ STL も例外を飛ばす可能性がありますから、例外は常に飛ぶ�
 つまり、一番上の呼び出しコード (main 関数やスレッドの起動時に実行する関数) で例外ハンドラを定義するのを忘れないようにしましょう。
 STL で投げられる例外や、お行儀の良い大抵の例外型は `std::exception` を継承していますので、それで受ければほぼ全ての例外がキャッチできます。
 例外を飛ばさないのは、C 言語互換の関数と、`noexcept` 指定で例外を飛ばさないことが明示されている関数だけで、それ以外は全部飛ばす可能性があるものとして扱いましょう。
+```
+デストラクタはnoexceptがデフォルト
+15.4.3 Destructors
+
+A declaration of a destructor that does not have a noexcept-specifier has the same exception
+specification as if had been implicitly declared
+```
 
 
 問題点として、例外の仕組みの実現にはコストがかかります。
