@@ -998,7 +998,7 @@ struct M  // Movable class example
     M(M&& rhs) : M() { swap(rhs); }
     // Move assign operator
     M& operator=(M&& rhs) { swap(rhs); return *this; }
-    void swap(M& rhs) {
+    void swap(M& rhs) noexcept {
         // *this と rhs の中身を入れ変える。
 
     }
