@@ -544,7 +544,7 @@ v.size() でサイズも分かる。
 
 ```c++
 size_t size0 = 10, size1 = 100;
-std::vector<std::vector<int> > vv(size0);
+std::vector<std::vector<int>> vv(size0);
 for (size_t i = 0; i < size0; i++) {
     vv[i].resize(size1);
 }
