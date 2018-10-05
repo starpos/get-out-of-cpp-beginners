@@ -1,9 +1,11 @@
 PREDEF:
+  - introduction.re
 
 CHAPS:
-  - src.re
+  - chapters.re
 
 APPENDIX:
 
 POSTDEF:
+  - conclusion_plus.re
 

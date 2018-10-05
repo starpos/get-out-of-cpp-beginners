@@ -23,7 +23,7 @@ language: ja
 
 # 書名
 # 読みを入れる例 booktitle: {name: "Re:VIEW EPUBサンプル", file-as: "リビューイーパブサンプル"}
-booktitle: C++初心者からの脱出 v0.6
+booktitle: C++初心者からの脱出
 
 # 著者名。「, 」で区切って複数指定できる
 # 読みを入れる例 aut: [{name: "青木峰郎", file-as: "アオキミネロウ"}, {name: "武藤健志", file-as: "ムトウケンシ"}, {name: "高橋征義", file-as: "タカハシマサヨシ"}, {name: "角征典", file-as: "カドマサノリ"}]
@@ -66,15 +66,15 @@ aut: [{name: "星野喬", file-as: "ホシノタカシ"}]
 # a-trl, trl: 翻訳者
 
 # 刊行日(省略した場合は実行時の日付)
-date: 2018-10-04
+date: 2018-10-08
 # 発行年月。YYYY-MM-DD形式による配列指定。省略した場合はdateを使用する
 # 複数指定する場合は次のように記述する
 # [["初版第1刷の日付", "初版第2刷の日付"], ["第2版第1刷の日付"]]
 # 日付の後ろを空白文字で区切り、任意の文字列を置くことも可能。
-history: [["2018-10-04 Ver 0.6"]]
+history: [["2018-10-08 Ver 1.0"]]
 # 権利表記(配列で複数指定可)
 # rights: (C) 2016 Re:VIEW Developers
-rights: (C) 2018 Takashi HOSHINO (CC BY 4.0)
+rights: (C) 2018 Takashi HOSHINO
 # description: 説明
 #description: "LICENSE: CC BY 4.0"
 # subject: 短い説明用タグ(配列で複数指定可)
@@ -186,7 +186,7 @@ coverimage: null
 highlight:
   html: "rouge"
   latex: "listings"
-  
+
 
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
@@ -335,6 +335,7 @@ pdfmaker:
   # bbox: mediabox
   #
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
-  colophon: true
+  # colophon: true
+  colophon: false
   # pdfmaker:階層を使うものはここまで
 

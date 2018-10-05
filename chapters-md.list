@@ -1,5 +1,5 @@
 title.md
-intro.md
+introduction.md
 toc.md
 class.md
 object.md
@@ -10,6 +10,8 @@ const.md
 template.md
 maintenancibility.md
 misc.md
-endnote.md
+conclusion.md
 acknowledgement.md
+author.md
+copyright.md
 history.md
