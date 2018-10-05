@@ -1,0 +1,62 @@
+%% from review-pdfmaker
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{\gtfamily\sffamily\bfseries\upshape \leftmark}
+\chead{}
+\rhead{\gtfamily\sffamily\bfseries\upshape \rightmark}
+\renewcommand{\sectionmark}[1]{\markright{\thesection~#1}{}}
+\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\ \thechapter\ \postchaptername~#1}{}}
+\renewcommand{\headfont}{\gtfamily\sffamily\bfseries}
+
+\fancypagestyle{plainhead}{%
+\fancyhead{}
+\fancyfoot{} % clear all header and footer fields
+\fancyfoot[CE,CO]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}}
+
+%% using Helvetica as sans-serif
+\renewcommand{\sfdefault}{phv}
+
+%% for listings
+\renewcommand{\lstlistingname}{List}
+\lstset{%
+  breaklines=true,%
+  breakautoindent=false,%
+  breakindent=0pt,%
+  fontadjust=true,%
+  backgroundcolor=\color{shadecolor},%
+  frame=single,%
+  framerule=0pt,%
+  basicstyle=\ttfamily\scriptsize,%
+  commentstyle=\color{reviewgreen},%
+  identifierstyle=\color{reviewblue},%
+  stringstyle=\color{reviewred},%
+  keywordstyle=\bfseries\color{reviewdarkred},%
+}%
+
+
+\sloppy
+
+%% make TOC non-red color
+\hypersetup{colorlinks=false}
+
+%\geometry{left=25mm,right=25mm,top=30mm,bottom=35mm}
+
+%% page number
+\renewenvironment{titlepage}{%
+    \cleardoublepage
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse\newpage
+    \fi
+    \thispagestyle{empty}%
+%    \setcounter{page}\@ne% リセットを無効化
+  }%
+  {\if@restonecol\twocolumn \else \newpage \fi
+    \if@twoside\else
+%      \setcounter{page}\@ne% リセットを無効化
+    \fi}
+\renewcommand\pagenumbering[1]{% デフォルトのアラビア文字のみとして何もしない
+}
