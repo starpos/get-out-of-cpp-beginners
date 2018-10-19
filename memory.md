@@ -242,7 +242,7 @@ C++11 以降では `alignas` キーワードでオブジェクトのアライン
 ```c++
 {
     alignas(64) int i;
-    ::assert(uintptr_t(&i) % 64 == 0);
+    assert(uintptr_t(&i) % 64 == 0);
 }
 ```
 スタックオブジェクトの場合はこのように簡単に制御できます。
@@ -255,7 +255,7 @@ struct alignas(64) A
 
 {
     A* a = new A;
-    ::assert(uintptr_t(a) % 64 == 0);
+    assert(uintptr_t(a) % 64 == 0);
 }
 ```
 `alignof(std:max_align_t)` より大きなアラインメント指定は実装依存らしいので、実際に確認してから使ってください。
