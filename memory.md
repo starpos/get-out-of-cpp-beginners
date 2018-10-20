@@ -317,6 +317,47 @@ struct B1
 ```
 `B1` はそのような場合でも `a1_` のデストラクタが呼ばれてリークは発生しません。
 
+
+`alloc_and_cstr()` を使う方法以外に、
+最近の C++ では `operator new` および `operator delete` を自分で定義することで、
+アラインメントを指定するなどのカスタム動作をさせることができます。
+
+```c++
+#include <cstdio>
+#include <new>
+#include <memory>
+
+struct A
+{
+    A() { /* ... */ }
+    ~A() { /* ... */ }
+
+    static void* operator new(size_t s, std::align_val_t alignment = std::align_val_t(alignof(A))) {
+        void *p;
+        if (::posix_memalign(&p, size_t(alignment), s) != 0) {
+            throw std::bad_alloc();
+        }
+        return p;
+    }
+    static void operator delete(void* p, std::align_val_t) {
+        ::free(p);
+    }
+};
+
+int main()
+{
+    const size_t ALIGNMENT = 64;
+    {
+        std::unique_ptr<A> a(new(std::align_val_t(ALIGNMENT)) A);
+        // a を使う
+    }
+};
+```
+
+上のコードは C++17 で動作します。C++11 から C++17 までの間にこのあたりの仕様はどんどん変化していますので、
+便利ではあるけれどまだ枯れていないといえるでしょう。使うなら注意してください。
+
+
 コンテナの要素にアラインメントを指定したいときは、素直に要素型を定義するときに `alignas` を指定するのが無難です。
 もしくは `B1` のような型を要素として格納するようにしましょう。
 コンテナのカスタムアロケータを使ってアラインメントを実現しようとするのはお薦めしません。
