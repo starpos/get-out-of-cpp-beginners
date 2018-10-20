@@ -122,21 +122,27 @@ struct C  // Copyable class example
 Copyable class は以下のように使えます。
 
 ```c++
-void f(const C& c)
+void f_cref(const C& c)
 {
     // c を read-only アクセスする
 }
 
-void g(C& c)
+void f_ref(C& c)
 {
     // c を操作する
+}
+
+void f_value(C c)
+{
+    // c はコピーされており、呼び出し側のコピー元には影響を与えない
 }
 
 struct A
 {
     C c;
-    const C& ref() const { return c; }  // const lvalue reference を返す
-    C& ref() { return c; }  // lvalue reference を返す
+    const C& cref() const { return c; }
+    C& ref() { return c; }
+    // C get() const { return c; }
 };
 
 int main()
@@ -145,17 +151,31 @@ int main()
     C c1 = c0;  // copy constructor が呼ばれる
     C c2;
     c2 = c1;  // copy assign operator が呼ばれる
-    f(c0);
-    g(c1);
+    f_cref(c0);  // c0 は変更されない
+    f_ref(c1);  // c0 は変更される(と考えられる)
+    f_value(c0);  // copy constructor が呼ばれ、c0 は変更されない
+
     A a;
-    const C& c3 = a.ref();  // const 版が呼ばれる
-    C& c4 = a.ref();  // non-const 版が呼ばれる
-    C c5 = a.ref();  // const 版、copy constructor が呼ばれる
-    c5 = a.ref(); // const 版、copy assign operator が呼ばれる
+    const C& c3 = a.cref(); // コピーは起こらない
+    C& c4 = a.ref(); // コピーは起こらない
+    C c5 = a.cref();  // copy constructor が呼ばれる
+    c5 = a.cref();  // copy assign operator が呼ばれる
+    C c6 = a.ref();  // copy constructor が呼ばれる
+    c6 = a.ref();  // copy assign operator が呼ばれる
 }
 ```
 
-`A::ref()` はオーバーロードされていてふたつの実体があり、引数や返り値に応じて適切なものが呼ばれます。
+`f_cref()` や `f_ref()` のように参照渡しすることは Copyable に限らず可能ですが、
+`f_value()` はコピー操作を必要とするので、Copyable でないと使えません。
+`A::cref()` や `A::ref()` は参照を返しますので、
+参照型変数 (`c3`, `c4`) で受ければ同じオブジェクトを指すことになりますが、
+値型変数 (`c5`, `c6`) で受ければ、コピーが発生します。
+値返しをする `A::get()` は `C` が Copyable であれば定義できますが、ここでは使っていませんし、オススメしません。
+`A::get()` を使ってこの例のような操作をしてみれば理由の一端は分かりますが、
+詳しくは説明しません(というかできません)。
+`A::cref()` で困ることはありませんので、そちらを使うようにし、
+メンバ変数を値返しするのはやめましょう。
+
 
 ポインタをメンバ変数に持つクラスを Copyable にするのは注意が必要です。
 
@@ -272,8 +292,8 @@ struct M  // Movable class example
     void swap(M& rhs) noexcept {
         // *this と rhs の中身を入れ変える。
     }
-    C(const C&) = delete;
-    C& operator=(const C&) = delete;
+    M(const M&) = delete;
+    M& operator=(const M&) = delete;
 };
 ```
 `swap()` というメンバ関数は、通常全てのメンバ変数の中身を入れ替えるという操作を指します。基本的な型については、`std::swap()` という関数が `#include <utility>` に用意されています。
@@ -286,7 +306,12 @@ Movable class は Copyable class と出来るだけ同じような使い方が�
 コンパイル時にそれぞれのコードでコピーかムーヴどちらの操作を実行するか決まります。
 
 ```c++
-void f(M&& m)
+void f_rref(M&& m)
+{
+    M m1 = std::move(m);  // move constructor が呼ばれる
+}
+
+void f_lref(M& m)
 {
     M m1 = std::move(m);  // move constructor が呼ばれる
 }
@@ -301,41 +326,58 @@ M create()
 struct A
 {
     M m;
-    const M& ref() const { return m; }  // const lvalue refernece を返す
+    const M& cref() const { return m; }  // const lvalue refernece を返す
     M&& ref() { return std::move(m); }  // rvalue reference を返す
-    // M& ref() { return std::move(m); }  // M& を返すものと M&& を返すものはオーバーロードできない
-}
+    // M& ref() { return std::move(m); }  // 返り値の型が違うだけではオーバーロードできない
+    // M get() { return m; }  // M の copy constructor がないと定義できない
+};
 
 int main()
 {
     M m0;
-    // M m1 = m0;  // copy constructor は定義されていないのでコンパイルエラー
+    // M m1 = m0;  // copy constructor は削除されているのでコンパイルエラー
     M m1 = std::move(m0);  // move constructor が呼ばれる
-    M m2 = create(); // move constructor が呼ばれる
+    M m2 = create(); // move constructor が呼ばれると思いきや copy elision によって直接構築される
+    m2 = create(); // move assign operator が呼ばれる
     m2 = std::move(m1);  // move assign operator が呼ばれる
     M&& m3 = std::move(m2);  // rvalue reference で xvalue を受ける
-    f(std::move(m3));  // m3 は lvalue なので std::move() で xvalue にする必要がある
+    f_rref(std::move(m3));  // m3 は lvalue なので std::move() で xvalue にする必要がある
+    f_lref(m3); // f_rref() と同じことが出来るが、move したことが分かりにくい
     A a0;
-    M m4 = a0.ref();  // non-const 版、move constructor が呼ばれる
-    M&& m5 = a0.ref();  // non-const 版が呼ばれる
-    const M& m6 = a0.ref();  // non-const 版が呼ばれる
-    const M& m7 = static_cast<const A&>(a0).ref();  // const 版が呼ばれる
-    // M& m8 = a0.ref();  // rvalue は M& では受けられないのでコンパイルエラー
-    const A a1;
-    // M m7 = a1.ref();  // const 版、copy constructor を呼ぼうとするが、後者がないのでコンパイルエラー
-    const M& m8 = a1.ref();  // const 版が呼ばれる
+    M m4 = a0.ref();  // move constructor が呼ばれる
+    // M m5 = a0.cref(); // copy constructor を呼ぼうとするがないのでコンパイルエラー
+    // M&& m6 = a0.cref(); // const M& は M&& や M& で受けられないのでコンパイルエラー
+    const M& m7 = a0.cref(); // move は起きない
+    M&& m8 = a0.ref();  // move は起きない、a0.ref() と m8 は同じオブジェクトを指している
+    M m9 = std::move(m8);  // a0.ref() が指しているオブジェクトが move される
+    // M& m10 = a0.ref();  // rvalue は M& では受けられないのでコンパイルエラー
+    const M& m11 = a0.ref();  // move は起きない
 }
 ```
 
 `std::move()` はただのキャストですが、lvalue を xvalue に変換するという点で意味を持ち、オーバーロードされた別の関数を選択させます。
-具体的には lvalue の場合は `const T&` が、 rvalue の場合は `T&&` で受ける実体が選ばれます。
+具体的には lvalue を渡したら `const T&` または `T&` で受ける関数、
+rvalue を渡したら `T&&` で受ける関数が選ばれます。
 コンパイラが適切なオーバーロード関数を選択するために lvalue と rvalue(xvalue + prvalue) の区別はあると言って良いでしょう。
 考えられる全ての組み合わせを挙げたわけではありませんが、我々が Movable class を使う場合は「移動」をしたいのであって、通常はごく一部の組み合わせでしか使いません。
 
-上に挙げた例を見ると、オーバーロードで複数の参照型と const が使われている場合に、不可解な挙動をするようにも見えます。
-const でない変数 `a0` において `ref()` を呼び出す場合、`const M&` で受けようとしても `A&&` を返す non-const 版が優先されてしまいます。
-const 版を呼ぶには `static_cast<const A&>` を使う必要があります。
-この例では敢えてオーバーロードさせてありますが、rvalue reference を返す関数を定義するときは、lvalue reference を返す関数とオーバーロードさせるのはやめて関数名を分けるのが懸命でしょう。
+`create()` は値を返します。これは prvalue です。
+よって `m2` への代入は意味としてはムーヴになります。
+しかし、別の章で説明した copy elision による最適化がはたらき、実際はムーヴが呼ばれないことがあります。
+当たり前のことですが念を押しておくと、copy elision が義務化されたとはいえ、その有無で挙動が変わるような
+コピーやムーヴの実装をすべきではありません。
+
+直接構築された場合と、構築されてムーヴされた場合とでオブジェクトの中身が同じになることが期待されています。
+そうでなければ copy elision のアリナシで結果が変わったら使う側は困ります。
+もちろん、わざと挙動が異なるクラスを作ることは可能ですが、このようなケースで挙動が変わるため、
+
+
+`f_rref()` と `f_lref()` は引数の渡し方にこそ違いがあれ、中身に区別はありません。
+私は、意味の違いで使い分けることにしています。
+渡した引数が move されることを前提とする場合は、`f_rref()` の方を使います。
+渡した引数を関数呼び出し後に利用する、例えばデータを呼び出し側に渡すなどの場合、は、`f_lref()` を使います。
+データが移動する向きが `f_rref()` と `f_lref()` で逆であることに注意してください。
+この使い分けルールは、コードの可読性およびメンテナンス性にとってかなり重要だと思います。
 
 ムーヴコンストラクタ、ムーブ代入演算子、`swap()` は noexcept で実装しておくのが良いです。
 `std::vector` などはメモリの再確保時に強い例外安全性を保証するために `std::move()` ではなく `std::move_if_noexcept()` を使います。
