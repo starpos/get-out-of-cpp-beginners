@@ -281,7 +281,7 @@ A* alloc_and_cstr(size_t alignment)
         throw std::bad_alloc();
     }
     try {
-        return new(p) A;
+        return ::new(p) A;
     } catch (...) {
         ::free(p);
         throw;
@@ -298,8 +298,10 @@ struct B0
     }
 };
 ```
-`new(p) A;` が placement new 演算子を使って初期化する操作です。
+`::new(p) A` が placement new 演算子を使って初期化する操作です。
 Try-catch 節は `A` のコンストラクタが例外を投げるケースをカバーしています。
+`new(p) A` ではなく `::new(p) A` を使う理由は説明すると長くなるので割愛します。
+気になる人は `A` 用の `operator new` を自分で定義して挙動を見てみると良いでしょう。
 
 
 ヒープオブジェクトは出来るだけ早く `std::unique_ptr` に格納することをお薦めします。
