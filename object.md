@@ -227,12 +227,12 @@ C++ においては、ポインタ型変数や参照型変数とそれが指し�
 
 ```c++
 {
-    A* b0, b1;
+    A *b0, *b1;
     {
         std::unique_ptr<A> a0(new A);  // a0 が所有者
         b0 = a0.get();   // b0 は借用者
         std::unique_ptr<A> a1(std::move(a0));  // a0 から a1 に所有権が移動
-        // a0 には nullptr が入っている
+        // a0 は nullptr を指すようになる
         b1 = a1.get();   // b1 は借用者
         // b0 も b1 も a1 と同じヒープオブジェクトを指している。
 
