@@ -16,4 +16,12 @@ https://starpos.booth.pm/items/1049177
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja)
 
+## ビルド
+
+- md2review 1.12.0 (たぶん他のバージョンでも動く)
+- review 2.5.0 (3.2.0 未対応)
+
+[Makefile](./Makefile) を読んでください。
+
+
 -----
