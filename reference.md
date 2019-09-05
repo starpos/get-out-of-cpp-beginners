@@ -296,8 +296,19 @@ struct M  // Movable class example
     M& operator=(const M&) = delete;
 };
 ```
+
 `swap()` というメンバ関数は、通常全てのメンバ変数の中身を入れ替えるという操作を指します。基本的な型については、`std::swap()` という関数が `#include <utility>` に用意されています。
-`move` された後のオブジェクトは不定であり再初期化なしには使ってはいけないこととする設計も可能ですが、「空」の状態のオブジェクトと `swap` するという設計にしておいた方が無難だと私は思います。
+元々の考え方では、`move` された後のオブジェクトは再初期化なしには使ってはいけないこととなっていますが、自分でムーヴ可能な型を設計する場合は「空」の状態のオブジェクトと `swap` するという設計にしておいた方が無難だと私は思います。
+もちろん自分が設計していない型に対して `swap` 挙動を期待してはいけません。
+例えば、`M(M&&) noexcept = default;` `M& operator=(M&&) noexcept = default;` などデフォルト定義を使うと `swap` の挙動にはなりません。
+手元で試したところ基本型やポインタ型などのメンバ変数についてはコピー挙動となるようです。
+つまり move 元の変数は破壊されるため、再初期化なしに使ってはいけない、という原則に従う必要があります。
+たとえば `std::vector<T>` 型なら move 元変数を再利用する前に `clear()` を呼ぶなどの手当が必要となります。
+まとめると move に求められる要件は swap とは異なりますが、swap で簡単に実装可能なので、そうしてしまった方が楽だし間違えにくいよというのが私の主張です。
+ただ、性能を犠牲にするケースがあることは確かなので、この設計を選ぶかどうかは性能に与える影響次第だとも言えます。
+C++20 の `std::movable` は `std::swappable` であることも求めているようなので、どちらにせよ `swap()` メンバ関数は必要になるのでしょう。
+(swap 実装を自分でするとメンバ変数の swap し忘れというポカをやる可能性はあります。これを嫌だと思うなら move は default 実装にして、move を使って swap を典型的なコードで実装する方がいいという説もあり得ますね。。)
+
 `M` では、コピーコンストラクタとコピー代入演算子が `delete` されていますが、これらを実装すれば、Copyable かつ Movable というクラスも作れます。
 ムーヴ操作を、コピーと同じ挙動として実装しても意味としてはまず問題はありませんが、一般に、ムーヴ操作は、コピー操作よりも低コスト、高速であることが期待されます。
 C++11 以降の STL コンテナは必ずしも Copyable な class でなくても Movable な class であればそれを要素として典型的な使い方が出来るようになっています。
@@ -378,9 +389,25 @@ copy elision の有無で結果が変わったら使う側は困ります。
 データが移動する向きが `f_rref()` と `f_lref()` で逆であることに注意してください。
 この使い分けルールは、コードの可読性およびメンテナンス性にとってかなり重要だと思います。
 
-ムーヴコンストラクタ、ムーブ代入演算子、`swap()` は noexcept で実装しておくのが良いです。
+ムーヴコンストラクタ、ムーブ代入演算子、`swap()` は `noexcept` で実装しておくのが良いです。
 `std::vector` などはメモリの再確保時に強い例外安全性を保証するために `std::move()` ではなく `std::move_if_noexcept()` を使います。
-このとき、コピーコンストラクタと noexcept がついていないムーヴコンストラクタの両方が使える要素型においては、期待と異なりコピーコンストラクタが呼ばれてしまうからです。
+このとき、コピーコンストラクタと `noexcept` がついていないムーヴコンストラクタの両方が使える要素型においては、期待と異なりコピーコンストラクタが呼ばれてしまうからです。
+厳密には、ムーヴコンストラクタ(およびムーヴ代入演算子)は、
+`std::is_move_constructible`
+(`std::is_move_assignable`)
+`std::is_nothrow_move_constructible`
+(`std::is_nothrow_move_assignable`)
+`std::is_trivially_move_constructible`
+(`std::is_trivially_move_assignable`)
+の 3 つの分類がなされていて、自分で実装する場合、可能であれば nothrow constructible/assignable なものにしておくのが良いということです。`swap` を用いて実装する場合は nothrow constructible/assignable にできると思います。
+同様にコピーコンストラクタ(コピー代入演算子)にも、
+`std::is_copy_constructible`
+(`std::is_copy_assignable`)
+`std::is_nothrow_copy_constructible`
+(`std::is_nothrow_copy_assignable`)
+`std::is_trivially_copy_constructible`
+(`std::is_trivially_copy_assignable`)
+の分類がありますが、メモリ確保を伴う場合など、nothrow にするのが無理なケースも多いと思います。
 
 
 ### 参照の使い分け
