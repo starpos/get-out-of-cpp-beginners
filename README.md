@@ -24,7 +24,7 @@ https://starpos.booth.pm/items/1049177
 ## ビルド
 
 - md2review 1.12.0 (たぶん他のバージョンでも動く)
-- review 2.5.0 (3.2.0 未対応)
+- review 2.5.0 (一応 review 5.0.0 でもビルドはできた)
 
 [Makefile](./Makefile) を読んでください。
 
