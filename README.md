@@ -8,6 +8,11 @@
 電子版を以下のサイトで販売しています。
 https://starpos.booth.pm/items/1049177
 
+## Markdown 版
+
+ソースコードは markdown なので、ほぼそのまま読めます。
+[Markdown 版 目次](index.md)
+
 ## 著作権
 
 (C) 2018 Takashi HOSHINO
