@@ -1,5 +1,10 @@
 ## NOT YET
 
+- C++17 の Polymorphic 多層アロケータについての簡単な紹介。
+  (libcxx では memory_resource が 202106 時点で未だ experimental なのを見てやる気をなくした。。)
+- C++20 の Concept についての簡単な紹介。
+
+
 - コメントの文字間が離れすぎ (文字間より行間の方が狭くて読み辛い)
   --> Re:VIEW or latex でどうしたら良いか分からない。。。
 
