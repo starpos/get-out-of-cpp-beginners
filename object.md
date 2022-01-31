@@ -110,7 +110,7 @@ struct D
 {
     char c;
     char padding0[7];
-    uint64_t i
+    uint64_t i;
 };
 
 static_assert(offsetof(D, c) == 0);
